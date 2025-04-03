@@ -169,82 +169,11 @@ export function getDbInstance(): IndexedDBWrapper {
 }
 ```
 
-// lib/db.ts
-      const store = transaction.objectStore(storeName);
-      const request = store.add(item);
-      
-      request.onsuccess = () => resolve(item);
-      request.onerror = () => reject(request.error);
-    });
-  }
+### How it works:
 
-  async get<T>(storeName: string, id: string): Promise<T | null> {
-    await this.waitForDB();
-    
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        reject(new Error("Database not initialized"));
-        return;
-      }
-      
-      const transaction = this.db.transaction(storeName, "readonly");
-      const store = transaction.objectStore(storeName);
-      const request = store.get(id);
-      
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
-    });
-  }
+- The `IndexedDBWrapper` class provides a clean API for interacting with IndexedDB
+- It handles database initialization, schema creation, and CRUD operations
+- The singleton pattern ensures only one database connection is used throughout the app
+- Server-side rendering (SSR) compatibility is maintained by checking for `window` before initialization
+- Async/await pattern with Promises makes database operations easier to work with
 
-  async getAll<T>(storeName: string, indexName?: string, query?: IDBKeyRange): Promise<T[]> {
-    await this.waitForDB();
-    
-    return new Promise((resolve, reject) => {
-      if (!this.db) {
-        reject(new Error("Database not initialized"));
-        return;
-      }
-      
-      const transaction = this.db.transaction(storeName, "readonly");
-      const store = transaction.objectStore(storeName);
-      
-      let request: IDBRequest;
-      if (indexName) {
-        const index = store.index(indexName);
-        request = query ? index.getAll(query) : index.getAll();
-      } else {
-        request = store.getAll();
-      }
-      
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-}
-
-// Singleton instance
-let dbInstance: IndexedDBWrapper | null = null;
-
-export function getDbInstance(): IndexedDBWrapper {
-  if (typeof window !== "undefined" && !dbInstance) {
-    dbInstance = new IndexedDBWrapper();
-  }
-  
-  // For SSR, return a dummy instance that will be replaced on client
-  if (!dbInstance) {
-    dbInstance = new IndexedDBWrapper();
-  }
-  
-  return dbInstance;
-}
-How it works:
-
-    The IndexedDBWrapper class provides a clean API for interacting with IndexedDB
-
-    It handles database initialization, schema creation, and CRUD operations
-
-    The singleton pattern ensures only one database connection is used throughout the app
-
-    Server-side rendering (SSR) compatibility is maintained by checking for window before initialization
-
-    Async/await pattern with Promises makes database operations easier to work with
