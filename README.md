@@ -169,11 +169,52 @@ export function getDbInstance(): IndexedDBWrapper {
 }
 ```
 
-### How it works:
 
-- The `IndexedDBWrapper` class provides a clean API for interacting with IndexedDB
-- It handles database initialization, schema creation, and CRUD operations
-- The singleton pattern ensures only one database connection is used throughout the app
-- Server-side rendering (SSR) compatibility is maintained by checking for `window` before initialization
-- Async/await pattern with Promises makes database operations easier to work with
+### 2. Database Context Provider
+
+```typescript
+// lib/db-context.tsx
+import React, { createContext, useContext, useMemo } from "react";
+import { getDbInstance } from "./db";
+
+function useDatabase() {
+  const db = useMemo(() => getDbInstance(), []);
+  
+  const users = {
+    getAll: async () => db.getAll<User>("users"),
+    getById: async (id: string) => db.get<User>("users", id),
+    getByEmail: async (email: string) => {
+      const users = await db.getAll<User>("users");
+      return users.find(user => user.email === email) || null;
+    },
+    create: async (user: Omit<User, "id" | "created_at">) => {
+      const id = crypto.randomUUID();
+      const newUser = { ...user, id, created_at: new Date().toISOString() };
+      return db.add<User>("users", newUser);
+    }
+  };
+  
+  return { users };
+}
+
+const DatabaseContext = createContext<ReturnType<typeof useDatabase> | null>(null);
+
+export function DatabaseProvider({ children }: { children: React.ReactNode }) {
+  const db = useDatabase();
+  
+  return React.createElement(
+    DatabaseContext.Provider,
+    { value: db },
+    children
+  );
+}
+
+export function useDb() {
+  const context = useContext(DatabaseContext);
+  if (!context) {
+    throw new Error("useDb must be used within a DatabaseProvider");
+  }
+  return context;
+}
+```
 
