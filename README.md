@@ -23,7 +23,7 @@ This stack ensures a scalable, maintainable, and performant expense tracking app
 
 ### 1. Client-Side Database with IndexedDB
 
-```typescript ```
+```typescript
 // lib/db.ts
 class IndexedDBWrapper {
   private db: IDBDatabase | null = null;
