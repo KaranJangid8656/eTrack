@@ -30,14 +30,16 @@ function ThemeProvider({
 }
 
 function useTheme() {
-  const [theme, setTheme] = React.useState<"light" | "dark" | "system">("system")
+  const [theme, setTheme] = React.useState<"light" | "dark" | "system">("light")
 
   React.useEffect(() => {
     const storedTheme = localStorage.getItem("theme") as "light" | "dark" | "system" | null
     if (storedTheme) {
       setTheme(storedTheme)
     } else {
-      setTheme("system")
+      setTheme("light")
+      localStorage.setItem("theme", "light")
+      document.documentElement.classList.remove("dark")
     }
   }, [])
 
