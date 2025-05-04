@@ -19,7 +19,6 @@ The Expense Tracker application is built using a modern web development stack:
 
 This stack ensures a scalable, maintainable, and performant expense tracking application, leveraging modern best practices in web development.
 
-## Detailed Implementation Breakdown
 
 
 
